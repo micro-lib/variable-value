@@ -90,10 +90,12 @@ abstract class ReadBasedValue
      */
     private function getVariableValue()
     {
-        if (++$this->variableReads <= $this->variableMaxReads) {
+        if (0 === $this->variableReads || $this->variableReads === $this->variableMaxReads) {
             $this->variableValue = call_user_func($this->variableUpdateCall);
             $this->variableReads = 0;
         }
+
+        ++$this->variableReads;
 
         return $this->variableValue;
     }
