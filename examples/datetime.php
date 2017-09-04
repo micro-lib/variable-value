@@ -5,7 +5,7 @@ require_once './vendor/autoload.php';
 /**
  * @property string dateTime
  */
-class DateTimeTimeBasedValue extends \MicroLib\VariableValue\TimeBasedValue
+class DateTimeVariableValue extends \MicroLib\VariableValue\TimeBasedValue
 {
     public function __construct(callable $variableUpdateCall)
     {
@@ -14,7 +14,7 @@ class DateTimeTimeBasedValue extends \MicroLib\VariableValue\TimeBasedValue
     }
 }
 
-$variable = new DateTimeTimeBasedValue(
+$variable = new DateTimeVariableValue(
     function () {
         return (new \DateTimeImmutable())->format('Y-m-d H:i:s'); // Variable Value will be updated by this callback
     }

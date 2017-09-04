@@ -5,7 +5,7 @@ require_once './vendor/autoload.php';
 /**
  * @property string count
  */
-class UsersCount extends \MicroLib\VariableValue\ReadBasedValue
+class UsersCountVariableValue extends \MicroLib\VariableValue\ReadBasedValue
 {
     public function __construct(callable $variableUpdateCall)
     {
@@ -14,13 +14,14 @@ class UsersCount extends \MicroLib\VariableValue\ReadBasedValue
     }
 }
 
+// Data source
 $usersCount = [
     30,
     40,
     50,
 ];
 
-$usersCounter = new UsersCount(function () use (&$usersCount) {
+$usersCounter = new UsersCountVariableValue(function () use (&$usersCount) {
     return array_shift($usersCount);
 });
 
