@@ -1,11 +1,10 @@
 <?php
 namespace MicroLib\VariableValue;
 
-abstract class TimeBasedValue
-{
-    /** @var string */
-    private $property;
+use MicroLib\VariableValue\TimeReader\TimeInterface;
 
+class TimeBasedValue implements VariableValueInterface
+{
     /** @var mixed */
     private $variableValue;
 
@@ -18,67 +17,38 @@ abstract class TimeBasedValue
     /** @var callable */
     private $variableUpdateCall;
 
+    /** @var TimeInterface */
+    private $timeReader;
+
     /**
-     * @param string   $property
+     * @param TimeInterface $timeReader
      * @param callable $variableUpdateCall
-     * @param int      $variableTtl        default:0
-     *
-     * @throws \InvalidArgumentException
+     * @param int $variableTtl default:1 second
      */
-    public function __construct($property, callable $variableUpdateCall, $variableTtl = 0)
+    public function __construct(TimeInterface $timeReader, callable $variableUpdateCall, $variableTtl = 1)
     {
-        $this->property = $property;
-        $this->variableUpdateCall = $variableUpdateCall;
-        $this->setVariableValueTtl($variableTtl);
+        $this->registerUpdateCall($variableUpdateCall, $variableTtl);
+        $this->timeReader = $timeReader;
+        $this->variableUpdatedAt = 0 - $variableTtl;
     }
 
     /**
-     * @param string $name
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return mixed
+     * @inheritdoc
      */
-    public function __get($name)
+    public function get()
     {
-        if ($name === $this->property) {
-            return $this->getVariableValue();
-        } else {
-            throw new \InvalidArgumentException('Unsupported property. Please use "' . $this->property . '"');
-        }
+        return $this->getVariableValue();
     }
 
-    /**
-     * @param string $name
-     * @param mixed  $value
-     *
-     * @throws \BadMethodCallException
-     */
-    public function __set($name, $value)
-    {
-        throw new \BadMethodCallException('Setter is disabled.');
-    }
-
-    /**
-     * @param callable $call
-     * @param int      $valueTtl Override constructor value
-     *
-     * @throws \InvalidArgumentException
-     */
-    protected function registerUpdateCall(callable $call, $valueTtl = 0)
+    private function registerUpdateCall(callable $call, int $variableMaxReads = 1): void
     {
         $this->setVariableUpdateCall($call);
-        $this->setVariableValueTtl($valueTtl);
+        $this->setVariableValueTtl($variableMaxReads);
     }
 
-    /**
-     * @param int $ttl
-     *
-     * @throws \InvalidArgumentException
-     */
-    private function setVariableValueTtl($ttl)
+    private function setVariableValueTtl(int $ttl): void
     {
-        if (is_int($ttl) && $ttl >= 0) {
+        if ($ttl >= 1) {
             $this->variableTtl = $ttl;
         } else {
             throw new \InvalidArgumentException('TTL value should be numeric and greater than zero.');
@@ -90,7 +60,7 @@ abstract class TimeBasedValue
      */
     private function getVariableValue()
     {
-        if ($this->variableUpdatedAt + $this->variableTtl < $this->getTime()) {
+        if ($this->variableUpdatedAt + $this->variableTtl <= $this->getTime()) {
             $this->variableValue = call_user_func($this->variableUpdateCall);
             $this->variableUpdatedAt = $this->getTime();
         }
@@ -98,20 +68,12 @@ abstract class TimeBasedValue
         return $this->variableValue;
     }
 
-    /**
-     * @return int
-     */
-    protected function getTime()
+    protected function getTime(): int
     {
-        return time();
+        return $this->timeReader->getTime();
     }
 
-    /**
-     * @param callable $call
-     *
-     * @throws \InvalidArgumentException
-     */
-    private function setVariableUpdateCall(callable $call)
+    private function setVariableUpdateCall(callable $call): void
     {
         if (false === is_callable($call)) {
             throw new \InvalidArgumentException('Provided function call is not callable');
