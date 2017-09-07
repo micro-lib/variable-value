@@ -1,5 +1,7 @@
 # Variable Values
 
+[![Build Status](https://travis-ci.org/micro-lib/variable-value.svg?branch=master)](https://travis-ci.org/micro-lib/variable-value)
+
 Intention of Variable Values is to provide means for defined way of updating values of variables (for example configuration parameters) in long running processes.
 
 For instance we might want to change connection timeout of our Http Client which is used php worker.
