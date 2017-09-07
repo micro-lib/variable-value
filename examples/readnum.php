@@ -2,31 +2,24 @@
 
 require_once './vendor/autoload.php';
 
-/**
- * @property string count
- */
-class UsersCountVariableValue extends \MicroLib\VariableValue\ReadBasedValue
+class MyRedis
 {
-    public function __construct(callable $variableUpdateCall)
+    protected $usersCount = [
+        '30',
+        '40',
+        '50',
+    ];
+
+    public function read()
     {
-        // Property "count" will be refreshed each five reads
-        parent::__construct('count', $variableUpdateCall, 5);
+        return array_shift($this->usersCount);
     }
 }
 
-// Data source
-$usersCount = [
-    30,
-    40,
-    50,
-];
-
-$usersCounter = new UsersCountVariableValue(function () use (&$usersCount) {
-    return array_shift($usersCount);
-});
+$usersCounter = new \MicroLib\VariableValue\ReadBasedValue([new MyRedis(), 'read'], 5);
 
 for ($i = 0; $i < 11; ++$i) {
-    echo $usersCounter->count . PHP_EOL;
+    echo $usersCounter->get() . PHP_EOL;
 }
 
 // Will output

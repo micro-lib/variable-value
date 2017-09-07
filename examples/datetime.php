@@ -2,39 +2,41 @@
 
 require_once './vendor/autoload.php';
 
-/**
- * @property string dateTime
- */
-class DateTimeVariableValue extends \MicroLib\VariableValue\TimeBasedValue
-{
-    public function __construct(callable $variableUpdateCall)
-    {
-        // Property "dateTime" will be valid for three seconds
-        parent::__construct('dateTime', $variableUpdateCall, 3);
-    }
-}
+// Data source
+$usersCount = [
+    '30',
+    '40',
+    '50',
+    '60',
+];
 
-$variable = new DateTimeVariableValue(
-    function () {
-        return (new \DateTimeImmutable())->format('Y-m-d H:i:s'); // Variable Value will be updated by this callback
-    }
+$usersCounter = new  \MicroLib\VariableValue\TimeBasedValue(
+    new \MicroLib\VariableValue\TimeReader\UnixTimestamp(),
+    function () use (&$usersCount) {
+    return array_shift($usersCount);
+}, 3
 );
 
 for ($i = 0; $i <= 10; ++$i) {
-    echo $variable->dateTime . PHP_EOL;
+    echo sprintf(
+        '[%s] %s%s',
+        (new DateTime())->format('H:i:s'),
+        $usersCounter->get(),
+        PHP_EOL
+    );
     sleep(1);
 }
 
 // Will output, something similar to:
-
-// 2017-06-02 18:59:44
-// 2017-06-02 18:59:44
-// 2017-06-02 18:59:44
-// 2017-06-02 18:59:44
-// 2017-06-02 18:59:48
-// 2017-06-02 18:59:48
-// 2017-06-02 18:59:48
-// 2017-06-02 18:59:48
-// 2017-06-02 18:59:52
-// 2017-06-02 18:59:52
-// 2017-06-02 18:59:52
+//
+//[15:54:34] 30
+//[15:54:35] 30
+//[15:54:36] 30
+//[15:54:37] 40
+//[15:54:38] 40
+//[15:54:39] 40
+//[15:54:40] 50
+//[15:54:41] 50
+//[15:54:42] 50
+//[15:54:43] 60
+//[15:54:44] 60
