@@ -14,7 +14,7 @@ $usersCounter = new  \MicroLib\VariableValue\TimeBasedValue(
     new \MicroLib\VariableValue\TimeReader\UnixTimestamp(),
     function () use (&$usersCount) {
     return array_shift($usersCount);
-}, 3
+}, 3 # Keep users count in memory for three seconds
 );
 
 for ($i = 0; $i <= 10; ++$i) {
